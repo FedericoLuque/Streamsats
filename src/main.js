@@ -55,7 +55,7 @@ on("challenge:solved", ({ paidSats, nextChallengeIn }) => {
 });
 
 on("payment:invoice", (data) => {
-  setStatus("Pagá el invoice para entrar", "info");
+  setStatus("Paga el invoice para entrar", "info");
   showInvoice(data);
 });
 
@@ -69,7 +69,7 @@ on("hint:start", ({ slotDurationSeconds, interactionType, sessionToken, challeng
   currentChallengeConfig = challengeConfig;
   currentChallengeType = challengeConfig.type;
   showSection("challenge-section");
-  setStatus(`¡Pista activa! Interactuá para revelarla`, "success");
+  setStatus(`¡Pista activa! Interactúa para revelarla`, "success");
   showChallengeInstructions(challengeConfig.type);
 
   const canvas = document.getElementById("challenge-canvas");
@@ -85,7 +85,7 @@ on("hint:start", ({ slotDurationSeconds, interactionType, sessionToken, challeng
 
   const slotExpiresAt = Date.now() + slotDurationSeconds * 1000;
   slotTimer = startSlotTimer(slotExpiresAt, () => {
-    setStatus("Tiempo de pista agotado — podés seguir respondiendo", "warning");
+    setStatus("Tiempo de pista agotado — puedes seguir respondiendo", "warning");
   });
 });
 
@@ -115,7 +115,7 @@ on("error", ({ message }) => {
 window.requestSlot = function() {
   const address = document.getElementById("winner-address")?.value?.trim();
   if (!address || !address.includes("@")) {
-    setStatus("Ingresá tu Lightning Address para poder recibir el premio", "error");
+    setStatus("Ingresa tu Lightning Address para poder recibir el premio", "error");
     document.getElementById("winner-address")?.focus();
     return;
   }
@@ -147,7 +147,7 @@ window.requestDemo = function() {
 window.playForReal = function() {
   window.closeDemoWin();
   showSection("lobby-section");
-  setStatus("Ingresá tu Lightning Address y pagá para competir por sats reales", "info");
+  setStatus("Ingresa tu Lightning Address y paga para competir por sats reales", "info");
 };
 
 window.closeDemoWin = function() {
@@ -158,7 +158,7 @@ window.closeDemoWin = function() {
 
 function submitAnswer(answer) {
   if (!currentSessionToken) {
-    setStatus("No tenés sesión activa — pagá primero", "warning");
+    setStatus("No tienes sesión activa — paga primero", "warning");
     return;
   }
   const proof = generateProof();
@@ -215,8 +215,8 @@ function showChallengeInstructions(type) {
     "hidden-code": `
       <strong style="color:#fff">🔢 Código Oculto — ¿Cómo jugar?</strong><br>
       Los números del código están ocultos entre ruido visual. Tu misión es encontrarlos.<br>
-      <strong style="color:#fff">Pasá el cursor por el canvas</strong> para revelarlos — aparecerán en el orden en que deben escribirse.<br>
-      Memorizá la secuencia y escribila completa en el campo de respuesta antes de que se acabe el tiempo.
+      <strong style="color:#fff">Pasa el cursor por el canvas</strong> para revelarlos — aparecerán en el orden en que deben escribirse.<br>
+      Memoriza la secuencia y escríbela completa en el campo de respuesta antes de que se acabe el tiempo.
     `,
   };
   el.innerHTML = instructions[type] || "";

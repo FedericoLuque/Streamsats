@@ -86,8 +86,8 @@ export function renderHiddenCode(canvas, config, sessionToken, onAnswer) {
     ctx.textBaseline = "alphabetic";
     const next = revealed.size + 1;
     const msg = revealed.size < numDigits
-      ? `Buscá el dígito #${next} pasando el cursor por el canvas (${revealed.size}/${numDigits} revelados)`
-      : `¡Todos revelados! Escribí el código y presioná Enter`;
+      ? `Busca el dígito #${next} pasando el cursor por el canvas (${revealed.size}/${numDigits} revelados)`
+      : `¡Todos revelados! Escribe el código y pulsa Enter`;
     ctx.fillText(msg, canvas.width / 2, 22);
 
     // Input display — boxes adapt to digit count
@@ -112,7 +112,7 @@ export function renderHiddenCode(canvas, config, sessionToken, onAnswer) {
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     ctx.font = "11px monospace";
-    ctx.fillText("Escribí el código de 4 dígitos y presioná Enter", canvas.width / 2, canvas.height - 8);
+    ctx.fillText("Escribe el código y pulsa Enter", canvas.width / 2, canvas.height - 8);
 
     requestAnimationFrame(draw);
   }

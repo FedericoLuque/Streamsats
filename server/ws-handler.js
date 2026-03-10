@@ -202,7 +202,7 @@ async function handleAnswerSubmit(ws, { challengeId, answer, sessionToken, inter
   // Validate interaction proof
   const proofValid = validateInteractionProof(interactionProof, challenge, sessionToken);
   if (!proofValid) {
-    send(ws, "submission:result", { correct: false, message: "Proof de interacción inválido — ¡hacé clic en el juego!" });
+    send(ws, "submission:result", { correct: false, message: "Proof de interacción inválido — ¡haz clic en el juego!" });
     return;
   }
 
@@ -219,7 +219,7 @@ async function handleAnswerSubmit(ws, { challengeId, answer, sessionToken, inter
 
   // Demo mode: show win but no payout
   if (session?.isDemo) {
-    send(ws, "demo:win", { message: "¡Correcto! En modo real ganarías sats. ¿Jugás con dinero real?" });
+    send(ws, "demo:win", { message: "¡Correcto! En modo real ganarías sats. ¿Juegas con dinero real?" });
     return;
   }
 
