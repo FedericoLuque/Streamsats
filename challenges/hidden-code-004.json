@@ -3,7 +3,7 @@
   "type": "hidden-code",
   "title": "Código Oculto",
   "pricePerSlotSats": 10,
-  "slotDurationSeconds": 20,
+  "slotDurationSeconds": 18,
   "answerHash": "ee056a074da02d43c96eff7714aed111923c3f63fa9c349adef96cdac429ea49",
   "config": {
     "seed": 381,
