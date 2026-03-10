@@ -10,6 +10,7 @@ let currentChallengeType = null;
 let currentChallengeConfig = null;
 let rendererCleanup = null;
 let slotTimer = null;
+let iWon = false;
 
 // WebSocket events
 on("ws:connected", () => {
@@ -41,11 +42,16 @@ on("challenge:new", (data) => {
   setStatus(`Nuevo reto: ${data.title}`, "info");
 });
 
-on("challenge:solved", ({ prizePoolSats, paidSats, nextChallengeIn }) => {
-  showVictoryScreen(paidSats, nextChallengeIn);
+on("challenge:solved", ({ paidSats, nextChallengeIn }) => {
   animatePool(0);
   if (rendererCleanup) { rendererCleanup(); rendererCleanup = null; }
   currentSessionToken = null;
+  if (iWon) {
+    iWon = false;
+    showVictoryScreen(paidSats, nextChallengeIn);
+  } else {
+    showOtherWonScreen(paidSats, nextChallengeIn);
+  }
 });
 
 on("payment:invoice", (data) => {
@@ -89,11 +95,8 @@ on("hint:expired", () => {
 });
 
 on("submission:result", ({ correct, message }) => {
-  if (correct) {
-    setStatus("¡GANASTE! " + message, "success");
-  } else {
-    setStatus(message, "error");
-  }
+  if (correct) iWon = true;
+  showResultPopup(correct, message);
 });
 
 on("demo:win", ({ message }) => {
@@ -164,6 +167,41 @@ function submitAnswer(answer) {
     winnerAddress: address
   });
 }
+
+function showOtherWonScreen(paidSats, nextChallengeIn) {
+  const screen = document.getElementById("other-won-screen");
+  if (!screen) return;
+  document.getElementById("other-won-amount").textContent = `El ganador se llevó ${paidSats.toLocaleString()} sats`;
+  screen.style.display = "flex";
+  let countdown = nextChallengeIn;
+  const cdEl = document.getElementById("other-won-countdown");
+  const t = setInterval(() => {
+    countdown--;
+    if (cdEl) cdEl.textContent = countdown;
+    if (countdown <= 0) {
+      clearInterval(t);
+      screen.style.display = "none";
+    }
+  }, 1000);
+}
+
+function showResultPopup(correct, message) {
+  const popup = document.getElementById("result-popup");
+  const box = document.getElementById("result-popup-box");
+  if (!popup) return;
+  document.getElementById("result-popup-icon").textContent = correct ? "🏆" : "❌";
+  document.getElementById("result-popup-title").textContent = correct ? "¡Respuesta correcta!" : "Respuesta incorrecta";
+  document.getElementById("result-popup-title").style.color = correct ? "#00ff9d" : "#ef4444";
+  document.getElementById("result-popup-msg").textContent = message;
+  box.style.borderColor = correct ? "rgba(0,255,157,0.3)" : "rgba(239,68,68,0.3)";
+  popup.style.display = "flex";
+  if (!correct) setTimeout(() => closeResultPopup(), 3000);
+}
+
+window.closeResultPopup = function() {
+  const popup = document.getElementById("result-popup");
+  if (popup) popup.style.display = "none";
+};
 
 function showChallengeInstructions(type) {
   const el = document.getElementById("challenge-instructions");

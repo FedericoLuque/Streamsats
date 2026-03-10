@@ -386,6 +386,26 @@
     </div>
   </div>
 
+  <!-- Other player won overlay -->
+  <div id="other-won-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:16px;padding:24px">
+    <div style="font-size:4rem">😔</div>
+    <div style="font-size:1.6rem;font-weight:900;color:#ffc800">Otro jugador ganó</div>
+    <div id="other-won-amount" style="color:rgba(255,255,255,0.6);font-size:1rem"></div>
+    <div style="color:rgba(255,255,255,0.4);font-size:0.9rem">Nuevo reto en <span id="other-won-countdown">5</span>s</div>
+  </div>
+
+  <!-- Result popup -->
+  <div id="result-popup" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center">
+    <div id="result-popup-box" style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 25px 60px rgba(0,0,0,0.6)">
+      <div id="result-popup-icon" style="font-size:4rem;margin-bottom:16px"></div>
+      <div id="result-popup-title" style="font-size:1.5rem;font-weight:900;margin-bottom:8px"></div>
+      <div id="result-popup-msg" style="color:rgba(255,255,255,0.6);font-size:0.95rem;margin-bottom:24px"></div>
+      <button onclick="window.closeResultPopup()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;color:#fff;padding:10px 28px;font-size:0.95rem;font-weight:600;cursor:pointer">
+        Continuar
+      </button>
+    </div>
+  </div>
+
   <!-- Demo win overlay -->
   <div id="demo-win-screen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:20px;padding:24px">
     <div style="font-size:4rem">🎉</div>
