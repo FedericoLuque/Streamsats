@@ -66,9 +66,13 @@ export function renderHiddenCode(canvas, config, sessionToken, onAnswer) {
         ctx.textBaseline = "middle";
         ctx.fillText(code[i], zone.x, zone.y);
       } else {
-        // Anonymous circle — no position info until revealed
-        ctx.strokeStyle = "rgba(255,255,255,0.15)";
-        ctx.lineWidth = 1;
+        // Anonymous circle — subtle but findable
+        ctx.fillStyle = "rgba(255,255,255,0.07)";
+        ctx.beginPath();
+        ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,0.35)";
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(zone.x, zone.y, zone.r, 0, Math.PI * 2);
         ctx.stroke();
@@ -183,7 +187,7 @@ function generateNoise(w, h, density, seed) {
     for (let x = 0; x < w; x += 4) {
       s = (s * 1664525 + 1013904223) >>> 0;
       if ((s % 100) < density * 100) {
-        const v = s % 60 + 10;
+        const v = s % 35 + 8;
         pixels.push({ x, y, v });
       }
     }
