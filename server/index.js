@@ -1,9 +1,9 @@
 import { createServer } from "http";
 import express from "express";
 import dotenv from "dotenv";
-import { getState } from "./game-state.js";
+import { getState, addToPool } from "./game-state.js";
 import { getCurrentChallenge } from "./challenge-loader.js";
-import { setupWebSocket } from "./ws-handler.js";
+import { setupWebSocket, broadcast } from "./ws-handler.js";
 import { testNWCConnection } from "./nwc.js";
 
 dotenv.config();
@@ -60,6 +60,22 @@ app.get("/api/challenge", (req, res) => {
 });
 
 app.get("/api/health", (req, res) => res.json({ ok: true, ts: Date.now() }));
+
+// Admin: add sats to prize pool without payment
+app.post("/api/admin/add-to-pool", (req, res) => {
+  const token = process.env.ADMIN_TOKEN;
+  if (!token || req.headers["authorization"] !== `Bearer ${token}`) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const sats = parseInt(req.body?.sats);
+  if (!sats || sats <= 0 || sats > 10_000_000) {
+    return res.status(400).json({ error: "Invalid sats amount (1 – 10,000,000)" });
+  }
+  const poolTotal = addToPool(sats);
+  broadcast("pool:updated", { prizePoolSats: poolTotal, delta: sats });
+  console.log(`[admin] Added ${sats} sats to pool → total ${poolTotal}`);
+  res.json({ ok: true, added: sats, prizePoolSats: poolTotal });
+});
 
 // Create HTTP server and attach WebSocket
 const server = createServer(app);
