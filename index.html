@@ -394,6 +394,14 @@
     <div style="color:rgba(255,255,255,0.4);font-size:0.9rem">Nuevo reto en <span id="other-won-countdown">5</span>s</div>
   </div>
 
+  <!-- Mobile warning -->
+  <div id="mobile-warning" style="display:none;position:fixed;inset:0;background:#0a0f1a;z-index:999;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:32px;gap:16px">
+    <div style="font-size:4rem">🖥️</div>
+    <div style="font-size:1.4rem;font-weight:900;color:#fff">Este juego requiere ordenador</div>
+    <div style="color:rgba(255,255,255,0.6);font-size:0.95rem;max-width:300px">El reto necesita ratón para revelar los dígitos ocultos. Ábrelo desde un PC para poder jugar.</div>
+    <div style="color:#00ff9d;font-size:0.85rem;margin-top:8px">streamsats.github.io</div>
+  </div>
+
   <!-- Result popup -->
   <div id="result-popup" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center">
     <div id="result-popup-box" style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 25px 60px rgba(0,0,0,0.6)">
@@ -425,6 +433,11 @@
     <div class="victory-next">Próximo reto en <span id="victory-countdown">5</span>s</div>
   </div>
 
+  <script>
+    if (/Mobi|Android|iPhone|iPad|iPod|Touch/i.test(navigator.userAgent) || window.innerWidth < 768) {
+      document.getElementById('mobile-warning').style.display = 'flex';
+    }
+  </script>
   <script type="module" src="/src/main.js"></script>
 
   <script>

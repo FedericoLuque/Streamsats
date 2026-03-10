@@ -122,8 +122,10 @@ export function renderHiddenCode(canvas, config, sessionToken, onAnswer) {
   // Hover detection
   canvas.onmousemove = (e) => {
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
 
     const nextToReveal = revealed.size;
     if (nextToReveal < revealZones.length) {
@@ -175,7 +177,7 @@ function generateRevealZones(w, h, count, seed) {
     const x = margin + (s % (w - margin * 2));
     s = (s * 1664525 + 1013904223) >>> 0;
     const y = 40 + margin + (s % (h - margin * 2 - 80));
-    zones.push({ x, y, r: 35 });
+    zones.push({ x, y, r: 45 });
   }
   return zones;
 }
