@@ -2,7 +2,7 @@ import { WebSocketServer } from "ws";
 import { getState, setPlayersOnline, addSession, getSession, removeSession } from "./game-state.js";
 import { getCurrentChallenge, getChallengeById, advanceChallenge } from "./challenge-loader.js";
 import { createSlotInvoice, startPollingInvoice } from "./invoice-manager.js";
-import { generateSessionToken, validateSessionToken, validateInteractionProof, hashAnswer } from "./anti-cheat.js";
+import { generateSessionToken, validateSessionToken, validateInteractionProof } from "./anti-cheat.js";
 import { payWinner, } from "./payout.js";
 
 const clients = new Map(); // ws → { id, winnerAddress }
@@ -143,13 +143,20 @@ async function handleDemoRequest(ws, { challengeId }) {
   onPaymentConfirmed(ws, challenge, fakeHash, 0, getState().prizePoolSats, true);
 }
 
+function generateRandomCode(digits) {
+  let code = "";
+  for (let i = 0; i < digits; i++) code += Math.floor(Math.random() * 10);
+  return code;
+}
+
 function onPaymentConfirmed(ws, challenge, paymentHash, amountSats, poolTotal, isDemo = false) {
   const now = Date.now();
   const slotExpiresAt = now + challenge.slotDurationSeconds * 1000;
   const answerDeadlineAt = slotExpiresAt + challenge.config.answerWindowSeconds * 1000;
 
+  const sessionCode = generateRandomCode(challenge.config.digits);
   const sessionToken = generateSessionToken(paymentHash, challenge.id, slotExpiresAt, answerDeadlineAt);
-  addSession(sessionToken, { challengeId: challenge.id, paymentHash, slotExpiresAt, answerDeadlineAt, isDemo });
+  addSession(sessionToken, { challengeId: challenge.id, paymentHash, slotExpiresAt, answerDeadlineAt, isDemo, code: sessionCode });
 
   // Broadcast pool update to all
   broadcastFn("pool:updated", { prizePoolSats: poolTotal, delta: amountSats });
@@ -172,7 +179,7 @@ function onPaymentConfirmed(ws, challenge, paymentHash, amountSats, poolTotal, i
       flashCount: challenge.config.flashCount,
       flashDurationMs: challenge.config.flashDurationMs,
       digits: challenge.config.digits,
-      code: challenge.config.code
+      code: sessionCode
     }
   });
 
@@ -206,15 +213,14 @@ async function handleAnswerSubmit(ws, { challengeId, answer, sessionToken, inter
     return;
   }
 
-  // Check answer
-  const answeredHash = hashAnswer(answer);
-  if (answeredHash !== challenge.answerHash) {
+  // Check answer against this session's unique code
+  const session = getSession(sessionToken);
+  if (!session || answer.trim() !== session.code) {
     send(ws, "submission:result", { correct: false, message: "Respuesta incorrecta. ¡Intentá de nuevo!" });
     return;
   }
 
   // WINNER!
-  const session = getSession(sessionToken);
   removeSession(sessionToken);
 
   // Demo mode: show win but no payout

@@ -98,12 +98,16 @@ on("hint:expired", () => {
 });
 
 on("submission:result", ({ correct, message }) => {
-  if (correct) iWon = true;
+  if (correct) {
+    iWon = true;
+    if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
+  }
   showResultPopup(correct, message);
 });
 
 on("demo:win", ({ message }) => {
   if (rendererCleanup) { rendererCleanup(); rendererCleanup = null; }
+  if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
   currentSessionToken = null;
   const screen = document.getElementById("demo-win-screen");
   if (screen) screen.style.display = "flex";
