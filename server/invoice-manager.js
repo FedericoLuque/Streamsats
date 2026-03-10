@@ -27,23 +27,20 @@ export async function createSlotInvoice(challengeId, sats) {
     expiry: EXPIRY
   });
 
+  const paymentHash = result.payment_hash || result.paymentHash;
+  const invoice = result.invoice || result.paymentRequest;
   const expiresAt = Date.now() + EXPIRY * 1000;
   const info = {
-    paymentHash: result.paymentHash,
-    invoice: result.paymentRequest,
+    paymentHash,
+    invoice,
     amountSats: sats,
     challengeId,
     expiresAt,
     paid: false
   };
-  addPendingInvoice(result.paymentHash, info);
+  addPendingInvoice(paymentHash, info);
 
-  return {
-    invoice: result.paymentRequest,
-    paymentHash: result.paymentHash,
-    amountSats: sats,
-    expiresAt
-  };
+  return { invoice, paymentHash, amountSats: sats, expiresAt };
 }
 
 export function startPollingInvoice(paymentHash, onPaid) {
