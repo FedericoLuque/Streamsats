@@ -36,6 +36,7 @@ on("challenge:new", (data) => {
   currentSessionToken = null;
   currentChallengeConfig = null;
   if (rendererCleanup) { rendererCleanup(); rendererCleanup = null; }
+  if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
   updateGameState(data);
   hideInvoice();
   showSection("lobby-section");
@@ -45,6 +46,7 @@ on("challenge:new", (data) => {
 on("challenge:solved", ({ paidSats, nextChallengeIn }) => {
   animatePool(0);
   if (rendererCleanup) { rendererCleanup(); rendererCleanup = null; }
+  if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
   currentSessionToken = null;
   if (iWon) {
     iWon = false;
@@ -84,6 +86,7 @@ on("hint:start", ({ slotDurationSeconds, interactionType, sessionToken, challeng
   }
 
   const slotExpiresAt = Date.now() + slotDurationSeconds * 1000;
+  if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
   slotTimer = startSlotTimer(slotExpiresAt, () => {
     setStatus("Tiempo de pista agotado — puedes seguir respondiendo", "warning");
   });
