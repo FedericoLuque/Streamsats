@@ -22,14 +22,21 @@ on("ws:disconnected", () => {
   setStatus("Reconectando...", "warning");
 });
 
+function updateMobilePool(sats) {
+  const el = document.getElementById("mobile-prize-pool");
+  if (el) el.textContent = Math.floor(sats * 0.9).toLocaleString();
+}
+
 on("game:state", (data) => {
   updateGameState(data);
+  updateMobilePool(data.prizePoolSats);
   currentChallengeId = data.challengeId;
   if (!currentSessionToken) showSection("lobby-section");
 });
 
 on("pool:updated", ({ prizePoolSats }) => {
   animatePool(prizePoolSats);
+  updateMobilePool(prizePoolSats);
 });
 
 on("challenge:new", (data) => {
@@ -39,6 +46,7 @@ on("challenge:new", (data) => {
   if (rendererCleanup) { rendererCleanup(); rendererCleanup = null; }
   if (slotTimer) { clearInterval(slotTimer); slotTimer = null; }
   updateGameState(data);
+  updateMobilePool(data.prizePoolSats);
   hideInvoice();
   showSection("lobby-section");
   setStatus(`Nuevo reto: ${data.title}`, "info");
