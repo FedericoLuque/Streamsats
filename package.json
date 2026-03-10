@@ -1,25 +1,33 @@
 {
-  "name": "lightning-starter",
+  "name": "streamsats",
   "version": "1.0.0",
-  "description": "Starter kit para Lightning Hackathons 2026 - La Crypta",
+  "description": "StreamSats — Juego competitivo de habilidad con Lightning Network",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/index.js",
+    "dev:full": "concurrently \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
-    "preview": "vite preview",
-    "example:invoice": "node src/examples/create-invoice.js",
-    "example:pay": "node src/examples/pay-invoice.js",
-    "example:nwc": "node src/examples/nwc-connect.js",
-    "example:lnurl": "node src/examples/lnurl-pay.js"
+    "preview": "vite preview"
   },
-  "keywords": ["lightning", "bitcoin", "nostr", "nwc", "hackathon", "lacrypta"],
-  "author": "La Crypta",
+  "keywords": [
+    "lightning",
+    "bitcoin",
+    "game",
+    "nwc",
+    "hackathon"
+  ],
+  "author": "StreamSats",
   "license": "MIT",
   "dependencies": {
     "@getalby/lightning-tools": "^5.0.0",
     "@getalby/sdk": "^3.0.0",
     "@nostr-dev-kit/ndk": "^2.0.0",
-    "webln": "^0.3.0"
+    "concurrently": "^9.2.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "webln": "^0.3.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

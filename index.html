@@ -3,302 +3,399 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ Lightning Starter Kit</title>
+  <title>⚡ StreamSats — Gana Bitcoin resolviendo retos</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0a0f1a;
+      --surface: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.1);
+      --accent: #00ff9d;
+      --accent2: #ffc800;
+      --text: #fff;
+      --muted: rgba(255,255,255,0.5);
+      --red: #ef4444;
+    }
+
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(180deg, #0a0f1a 0%, #1a1a2e 100%);
+      background: var(--bg);
       min-height: 100vh;
-      color: #fff;
-      padding: 40px 20px;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
     }
-    .container { max-width: 800px; margin: 0 auto; }
-    h1 { 
-      font-size: 2.5rem; 
-      margin-bottom: 10px;
+
+    /* ── Header ── */
+    header {
       display: flex;
       align-items: center;
-      gap: 15px;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.3);
     }
-    h1 span { color: #ffc800; }
-    .subtitle { color: rgba(255,255,255,0.6); margin-bottom: 40px; }
-    
+    .logo { font-size: 1.4rem; font-weight: 700; }
+    .logo span { color: var(--accent); }
+
+    /* ── Prize Pool Hero ── */
+    .pool-hero {
+      text-align: center;
+      padding: 40px 20px 24px;
+      background: linear-gradient(180deg, rgba(0,255,157,0.05) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .pool-label { color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .pool-amount {
+      font-size: clamp(3rem, 10vw, 6rem);
+      font-weight: 900;
+      color: var(--accent);
+      transition: transform 0.1s;
+      font-variant-numeric: tabular-nums;
+    }
+    .pool-amount.pool-flash { transform: scale(1.04); color: #fff; }
+    .pool-unit { font-size: 1.5rem; color: var(--muted); margin-left: 8px; }
+    .pool-sub { color: var(--muted); font-size: 0.9rem; margin-top: 8px; }
+
+    /* ── Layout ── */
+    .main {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      flex: 1;
+    }
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Cards ── */
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
     }
-    .card h2 {
-      font-size: 1.3rem;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .card p { color: rgba(255,255,255,0.7); margin-bottom: 20px; line-height: 1.6; }
-    
-    input, textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid rgba(255,255,255,0.2);
+    .card h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      padding: 10px 14px;
       border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      color: #fff;
-      font-size: 1rem;
-      margin-bottom: 15px;
+      font-size: 0.9rem;
+      background: rgba(255,255,255,0.07);
+      border-left: 3px solid transparent;
     }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #00ff9d;
-    }
-    input::placeholder { color: rgba(255,255,255,0.4); }
-    
+    .status-success { border-color: var(--accent); color: var(--accent); background: rgba(0,255,157,0.08); }
+    .status-error { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.08); }
+    .status-warning { border-color: var(--accent2); color: var(--accent2); background: rgba(255,200,0,0.08); }
+    .status-info { border-color: #60a5fa; color: #93c5fd; background: rgba(96,165,250,0.08); }
+
+    /* ── Buttons ── */
     button {
-      padding: 12px 24px;
-      background: linear-gradient(135deg, #00ff9d 0%, #00cc7d 100%);
-      color: #000;
-      font-weight: 600;
+      cursor: pointer;
       border: none;
       border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: transform 0.2s;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: opacity 0.15s, transform 0.1s;
+      padding: 12px 20px;
+      width: 100%;
     }
-    button:hover { transform: scale(1.02); }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00ff9d 0%, #00cc7d 100%);
+      color: #000;
+      font-size: 1.1rem;
+      padding: 14px;
     }
-    
-    .output {
-      background: rgba(0,0,0,0.3);
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* ── Input ── */
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 15px;
-      margin-top: 15px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      word-break: break-all;
-      display: none;
+      color: var(--text);
+      font-size: 0.95rem;
+      margin-bottom: 10px;
     }
-    .output.show { display: block; }
-    .output.success { border-left: 3px solid #00ff9d; }
-    .output.error { border-left: 3px solid #ff6b6b; }
-    
-    .status {
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
+    input:focus { outline: none; border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+
+    /* ── Game sections ── */
+    .game-area {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .game-section { display: none; }
+    .game-section.active { display: block; }
+
+    /* ── Challenge canvas ── */
+    #challenge-canvas {
+      width: 100%;
+      max-width: 560px;
+      height: 340px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: block;
+      cursor: crosshair;
+    }
+
+    /* ── Answer section ── */
+    .answer-row {
+      display: flex;
       gap: 8px;
-      margin-bottom: 15px;
+      margin-top: 12px;
     }
-    .status.connected { background: rgba(0,255,157,0.15); color: #00ff9d; }
-    .status.disconnected { background: rgba(255,107,107,0.15); color: #ff6b6b; }
-    
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-    
-    .footer {
-      margin-top: 60px;
+    .answer-row input { margin-bottom: 0; flex: 1; }
+    .answer-row button { width: auto; padding: 10px 20px; }
+
+    /* ── Payment section ── */
+    #payment-section { display: none; }
+    #payment-section.active { display: block; }
+
+    #qr-container {
+      display: flex;
+      justify-content: center;
+      margin: 12px 0;
+      background: #fff;
+      border-radius: 8px;
+      padding: 12px;
+      width: fit-content;
+    }
+
+    .invoice-text {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: var(--muted);
+      word-break: break-all;
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 6px;
+      margin: 8px 0;
+      max-height: 60px;
+      overflow: hidden;
+    }
+
+    /* ── Slot info ── */
+    .slot-info {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .slot-badge {
+      background: rgba(255,200,0,0.1);
+      border: 1px solid rgba(255,200,0,0.3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.8rem;
+      color: var(--accent2);
+    }
+
+    /* ── Players / timer ── */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    /* ── Victory overlay ── */
+    #victory-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
       text-align: center;
-      color: rgba(255,255,255,0.4);
-      font-size: 0.9rem;
+      gap: 20px;
     }
-    .footer a { color: #ffc800; text-decoration: none; }
+    #victory-screen.show { display: flex; }
+    .victory-emoji { font-size: 5rem; }
+    .victory-amount { font-size: 4rem; font-weight: 900; color: var(--accent); }
+    .victory-label { color: var(--muted); font-size: 1.1rem; }
+    .victory-next { color: var(--muted); font-size: 0.9rem; }
+
+    /* ── Timer ── */
+    #slot-timer {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Separator ── */
+    hr { border: none; border-top: 1px solid var(--border); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>⚡ <span>Lightning</span> Starter Kit</h1>
-    <p class="subtitle">Demo interactivo para Lightning Hackathons 2026</p>
 
-    <!-- WebLN Connection -->
-    <div class="card">
-      <h2>🔌 Conectar Wallet (WebLN)</h2>
-      <p>Conectá tu wallet del navegador (Alby, etc.) para interactuar con Lightning.</p>
-      
-      <div id="walletStatus" class="status disconnected">
-        ⚪ No conectado
-      </div>
-      
-      <button id="connectBtn" onclick="connectWallet()">Conectar Wallet</button>
-      <div id="walletOutput" class="output"></div>
+  <!-- Header -->
+  <header>
+    <div class="logo">⚡ Stream<span>Sats</span></div>
+    <div class="meta-row" style="gap:16px">
+      <span id="players-online" style="color:var(--muted);font-size:0.85rem">Conectando...</span>
+      <span id="slot-timer" style="display:none"></span>
     </div>
+  </header>
 
-    <div class="grid">
-      <!-- Lightning Address -->
+  <!-- Prize Pool Hero -->
+  <div class="pool-hero">
+    <div class="pool-label">Bote acumulado</div>
+    <div>
+      <span class="pool-amount" id="prize-pool">0</span>
+      <span class="pool-unit">sats</span>
+    </div>
+    <div class="pool-sub" id="challenge-title">Cargando reto...</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+      <!-- Status -->
+      <div id="status-bar" class="status-bar status-info">Conectando...</div>
+
+      <!-- Challenge info -->
       <div class="card">
-        <h2>📬 Lightning Address</h2>
-        <p>Resolvé una Lightning Address y generá un invoice.</p>
-        
-        <input type="text" id="lnAddress" placeholder="usuario@dominio.com" value="hello@getalby.com">
-        <input type="number" id="lnAmount" placeholder="Cantidad en sats" value="21">
-        <button onclick="resolveLightningAddress()">Generar Invoice</button>
-        <div id="lnAddressOutput" class="output"></div>
+        <h3>Reto actual</h3>
+        <div style="margin-bottom:8px">
+          <strong id="challenge-title-side">—</strong>
+          <div style="color:var(--muted);font-size:0.8rem;margin-top:4px" id="challenge-type">—</div>
+        </div>
+        <div class="slot-info">
+          <span class="slot-badge">⚡ <span id="slot-price">—</span></span>
+        </div>
       </div>
 
-      <!-- Create Invoice -->
+      <!-- Lightning Address input -->
       <div class="card">
-        <h2>📝 Crear Invoice</h2>
-        <p>Generá un invoice para recibir pagos.</p>
-        
-        <input type="number" id="invoiceAmount" placeholder="Cantidad en sats" value="100">
-        <input type="text" id="invoiceMemo" placeholder="Descripción" value="Test desde Lightning Starter">
-        <button id="createInvoiceBtn" onclick="createInvoice()" disabled>Crear Invoice</button>
-        <div id="invoiceOutput" class="output"></div>
+        <h3>Tu Lightning Address</h3>
+        <input type="text" id="winner-address" placeholder="tu@wallet.com" autocomplete="off">
+        <div style="color:var(--muted);font-size:0.75rem">Para recibir el premio si ganás</div>
       </div>
-    </div>
 
-    <!-- Pay Invoice -->
-    <div class="card">
-      <h2>💸 Pagar Invoice</h2>
-      <p>Pagá un invoice bolt11.</p>
-      
-      <textarea id="payInvoice" rows="3" placeholder="lnbc..."></textarea>
-      <button id="payBtn" onclick="payInvoice()" disabled>Pagar</button>
-      <div id="payOutput" class="output"></div>
-    </div>
+      <!-- Pay to play -->
+      <button class="btn-primary" onclick="window.requestSlot()">
+        ⚡ Pagar y jugar
+      </button>
 
-    <div class="footer">
-      <p>
-        <a href="https://hackaton.lacrypta.ar" target="_blank">Lightning Hackathons 2026</a> · 
-        <a href="https://lacrypta.ar" target="_blank">La Crypta</a> · 
-        <a href="https://github.com/lacrypta/lightning-starter" target="_blank">GitHub</a>
-      </p>
+      <hr>
+
+      <!-- How to play -->
+      <div style="font-size:0.8rem;color:var(--muted);line-height:1.6">
+        <div style="color:var(--text);font-weight:600;margin-bottom:6px">¿Cómo jugar?</div>
+        <p>1. Ingresá tu Lightning Address</p>
+        <p>2. Pagá el slot en sats</p>
+        <p>3. Interactuá con la pista</p>
+        <p>4. Enviá la respuesta correcta</p>
+        <p style="margin-top:6px;color:var(--accent)">¡El primero en acertar gana el bote!</p>
+        <p style="margin-top:4px;color:var(--muted)">Comisión del 10% por operación</p>
+      </div>
+    </aside>
+
+    <!-- Game area -->
+    <div class="game-area">
+
+      <!-- Payment section (overlay-style) -->
+      <div id="payment-section" class="card">
+        <h3>Pagar invoice</h3>
+        <div style="font-size:0.9rem;margin-bottom:10px">
+          Monto: <strong id="invoice-amount">—</strong>
+          &nbsp;|&nbsp;
+          <span id="invoice-timer" style="color:var(--muted)"></span>
+        </div>
+        <div id="qr-container"></div>
+        <div id="invoice-text" class="invoice-text"></div>
+        <button class="btn-secondary" id="copy-invoice-btn" onclick="window.copyInvoice()" style="margin-top:6px">
+          Copiar invoice
+        </button>
+      </div>
+
+      <!-- Lobby section -->
+      <div id="lobby-section" class="game-section active">
+        <div class="card" style="text-align:center;padding:48px 20px">
+          <div style="font-size:3rem;margin-bottom:16px">🎮</div>
+          <div style="font-size:1.3rem;font-weight:700;margin-bottom:8px">¿Listo para competir?</div>
+          <div style="color:var(--muted);margin-bottom:24px">
+            Pagá un slot para ver la pista del reto actual.<br>
+            El bote crece con cada jugador. ¡Primero que responde gana!
+          </div>
+          <div style="max-width:280px;margin:0 auto">
+            <button class="btn-primary" onclick="window.requestSlot()">
+              ⚡ Entrar al reto
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge section -->
+      <div id="challenge-section" class="game-section">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <strong>Reto activo</strong>
+            <span id="slot-timer-inline" style="color:var(--accent2);font-weight:700"></span>
+          </div>
+          <canvas id="challenge-canvas" width="560" height="340"></canvas>
+          <div class="answer-row" style="margin-top:16px">
+            <input type="text" id="answer-input" placeholder="Tu respuesta..." autocomplete="off">
+            <button class="btn-secondary" style="width:auto;padding:10px 20px" onclick="window.submitAnswerManual()">
+              Enviar
+            </button>
+          </div>
+          <div style="color:var(--muted);font-size:0.75rem;margin-top:6px">
+            Para visual-pattern: escribe los colores separados por guion (ej: red-blue-green-yellow)<br>
+            Para hidden-code: escribe los 4 dígitos y presiona Enter
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <script type="module">
-    import { LightningAddress } from "https://esm.sh/@getalby/lightning-tools@5";
-    
-    window.webln = null;
+  <!-- Victory overlay -->
+  <div id="victory-screen">
+    <div class="victory-emoji">🏆</div>
+    <div class="victory-amount" id="victory-sats">0</div>
+    <div class="victory-label">sats ganados</div>
+    <div class="victory-next">Próximo reto en <span id="victory-countdown">5</span>s</div>
+  </div>
 
-    // Conectar wallet
-    window.connectWallet = async function() {
-      const status = document.getElementById("walletStatus");
-      const output = document.getElementById("walletOutput");
-      const btn = document.getElementById("connectBtn");
-      
-      try {
-        btn.disabled = true;
-        btn.textContent = "Conectando...";
-        
-        if (typeof window.webln === "undefined" || !window.webln) {
-          // Intentar detectar provider
-          if (window.nostr) {
-            output.textContent = "⚠️ Detecté Nostr pero no WebLN. Instalá Alby para pagos Lightning.";
-            output.className = "output show error";
-            return;
-          }
-          throw new Error("No se detectó wallet. Instalá Alby u otra extensión WebLN.");
-        }
+  <script type="module" src="/src/main.js"></script>
 
-        await window.webln.enable();
-        const info = await window.webln.getInfo();
-        
-        status.className = "status connected";
-        status.innerHTML = `🟢 Conectado: ${info.node?.alias || "Wallet"}`;
-        
-        output.textContent = JSON.stringify(info, null, 2);
-        output.className = "output show success";
-        
-        // Habilitar botones
-        document.getElementById("createInvoiceBtn").disabled = false;
-        document.getElementById("payBtn").disabled = false;
-        
-        btn.textContent = "✓ Conectado";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-        btn.disabled = false;
-        btn.textContent = "Conectar Wallet";
-      }
-    };
-
-    // Resolver Lightning Address
-    window.resolveLightningAddress = async function() {
-      const address = document.getElementById("lnAddress").value;
-      const amount = parseInt(document.getElementById("lnAmount").value) || 21;
-      const output = document.getElementById("lnAddressOutput");
-      
-      try {
-        output.textContent = "Resolviendo...";
-        output.className = "output show";
-        
-        const ln = new LightningAddress(address);
-        await ln.fetch();
-        
-        const invoice = await ln.requestInvoice({ satoshi: amount });
-        
-        output.textContent = `✅ Invoice de ${amount} sats:\n\n${invoice.paymentRequest}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Crear invoice
-    window.createInvoice = async function() {
-      const amount = parseInt(document.getElementById("invoiceAmount").value);
-      const memo = document.getElementById("invoiceMemo").value;
-      const output = document.getElementById("invoiceOutput");
-      
-      try {
-        output.textContent = "Creando invoice...";
-        output.className = "output show";
-        
-        const invoice = await window.webln.makeInvoice({
-          amount: amount,
-          defaultMemo: memo
-        });
-        
-        output.textContent = `✅ Invoice creado:\n\n${invoice.paymentRequest}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Pagar invoice
-    window.payInvoice = async function() {
-      const invoice = document.getElementById("payInvoice").value.trim();
-      const output = document.getElementById("payOutput");
-      
-      if (!invoice) {
-        output.textContent = "⚠️ Pegá un invoice bolt11";
-        output.className = "output show error";
-        return;
-      }
-      
-      try {
-        output.textContent = "Enviando pago...";
-        output.className = "output show";
-        
-        const result = await window.webln.sendPayment(invoice);
-        
-        output.textContent = `✅ Pago exitoso!\n\nPreimage: ${result.preimage}`;
-        output.className = "output show success";
-        
-      } catch (err) {
-        output.textContent = "❌ " + err.message;
-        output.className = "output show error";
-      }
-    };
-
-    // Auto-detect wallet on load
-    if (window.webln) {
-      document.getElementById("walletStatus").innerHTML = "🟡 Wallet detectada - Click para conectar";
-    }
+  <script>
+    // Sync slot timer to sidebar header
+    const observer = new MutationObserver(() => {
+      const inline = document.getElementById('slot-timer');
+      const header = document.querySelector('header #slot-timer');
+      // both are same element — no duplication needed
+    });
   </script>
 </body>
 </html>

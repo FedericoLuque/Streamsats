@@ -1,0 +1,19 @@
+{
+  "id": "hc-001",
+  "type": "hidden-code",
+  "title": "Código Oculto #1",
+  "pricePerSlotSats": 75,
+  "slotDurationSeconds": 20,
+  "answerHash": "00be1be68e3e1231b9f749d9105c2b568c2f9346265453762ffc924eb08bfe6a",
+  "config": {
+    "seed": 99,
+    "digits": 10,
+    "code": "4728361059",
+    "noiseDensity": 0.8,
+    "flashCount": 3,
+    "flashDurationMs": 300,
+    "interactionRequired": "hover-to-reveal",
+    "requiredClicks": 10,
+    "answerWindowSeconds": 60
+  }
+}

@@ -1,0 +1,242 @@
+import { WebSocketServer } from "ws";
+import { getState, setPlayersOnline, addSession, getSession, removeSession } from "./game-state.js";
+import { getCurrentChallenge, getChallengeById, advanceChallenge } from "./challenge-loader.js";
+import { createSlotInvoice, startPollingInvoice } from "./invoice-manager.js";
+import { generateSessionToken, validateSessionToken, validateInteractionProof, hashAnswer } from "./anti-cheat.js";
+import { payWinner, } from "./payout.js";
+
+const clients = new Map(); // ws → { id, winnerAddress }
+
+let broadcastFn = null;
+
+export function setupWebSocket(server) {
+  const wss = new WebSocketServer({ server });
+
+  broadcastFn = (event, data) => {
+    const msg = JSON.stringify({ event, data });
+    for (const [ws] of clients) {
+      if (ws.readyState === ws.OPEN) ws.send(msg);
+    }
+  };
+
+  wss.on("connection", (ws) => {
+    const clientId = `client-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    clients.set(ws, { id: clientId, winnerAddress: null });
+    setPlayersOnline(clients.size);
+
+    // Send current game state to new client
+    const challenge = getCurrentChallenge();
+    const state = getState();
+    send(ws, "game:state", {
+      challengeId: challenge.id,
+      title: challenge.title,
+      type: challenge.type,
+      prizePoolSats: state.prizePoolSats,
+      playersOnline: clients.size,
+      slotPriceSats: challenge.pricePerSlotSats
+    });
+
+    // Broadcast updated player count
+    broadcastFn("game:state", {
+      challengeId: challenge.id,
+      title: challenge.title,
+      type: challenge.type,
+      prizePoolSats: state.prizePoolSats,
+      playersOnline: clients.size,
+      slotPriceSats: challenge.pricePerSlotSats
+    });
+
+    ws.on("message", (raw) => {
+      try {
+        const { event, data } = JSON.parse(raw);
+        handleMessage(ws, event, data);
+      } catch (err) {
+        console.error("[ws] parse error:", err.message);
+      }
+    });
+
+    ws.on("close", () => {
+      clients.delete(ws);
+      setPlayersOnline(clients.size);
+      const ch = getCurrentChallenge();
+      const st = getState();
+      broadcastFn("game:state", {
+        challengeId: ch.id,
+        title: ch.title,
+        type: ch.type,
+        prizePoolSats: st.prizePoolSats,
+        playersOnline: clients.size,
+        slotPriceSats: ch.pricePerSlotSats
+      });
+    });
+
+    ws.on("error", (err) => console.error("[ws] error:", err.message));
+  });
+
+  return wss;
+}
+
+function send(ws, event, data) {
+  if (ws.readyState === ws.OPEN) {
+    ws.send(JSON.stringify({ event, data }));
+  }
+}
+
+async function handleMessage(ws, event, data) {
+  if (event === "payment:request") {
+    await handlePaymentRequest(ws, data);
+  } else if (event === "answer:submit") {
+    await handleAnswerSubmit(ws, data);
+  }
+}
+
+async function handlePaymentRequest(ws, { challengeId, winnerAddress }) {
+  // Store winner address for later payout
+  const clientInfo = clients.get(ws);
+  if (clientInfo && winnerAddress) {
+    clientInfo.winnerAddress = winnerAddress;
+  }
+
+  const challenge = getCurrentChallenge();
+  if (challenge.id !== challengeId) {
+    send(ws, "error", { message: "Challenge ID mismatch — reload the page" });
+    return;
+  }
+
+  try {
+    const invoiceData = await createSlotInvoice(challengeId, challenge.pricePerSlotSats);
+    send(ws, "payment:invoice", {
+      invoice: invoiceData.invoice,
+      paymentHash: invoiceData.paymentHash,
+      amountSats: invoiceData.amountSats,
+      expiresAt: invoiceData.expiresAt
+    });
+
+    // Start polling for payment
+    startPollingInvoice(invoiceData.paymentHash, ({ paymentHash, amountSats, poolTotal }) => {
+      onPaymentConfirmed(ws, challenge, paymentHash, amountSats, poolTotal);
+    });
+  } catch (err) {
+    console.error("[payment:request] error:", err.message);
+    send(ws, "error", { message: "Could not create invoice: " + err.message });
+  }
+}
+
+function onPaymentConfirmed(ws, challenge, paymentHash, amountSats, poolTotal) {
+  const now = Date.now();
+  const slotExpiresAt = now + challenge.slotDurationSeconds * 1000;
+  const answerDeadlineAt = slotExpiresAt + challenge.config.answerWindowSeconds * 1000;
+
+  const sessionToken = generateSessionToken(paymentHash, challenge.id, slotExpiresAt, answerDeadlineAt);
+  addSession(sessionToken, { challengeId: challenge.id, paymentHash, slotExpiresAt, answerDeadlineAt });
+
+  // Broadcast pool update to all
+  broadcastFn("pool:updated", { prizePoolSats: poolTotal, delta: amountSats });
+
+  // Confirm payment to payer
+  send(ws, "payment:confirmed", { sessionToken, slotExpiresAt });
+
+  // Send hint start to payer
+  send(ws, "hint:start", {
+    slotDurationSeconds: challenge.slotDurationSeconds,
+    interactionType: challenge.config.interactionRequired,
+    sessionToken,
+    challengeConfig: {
+      type: challenge.type,
+      seed: challenge.config.seed,
+      colors: challenge.config.colors,
+      sequence: challenge.config.sequence,
+      sequenceLength: challenge.config.sequenceLength,
+      noiseDensity: challenge.config.noiseDensity,
+      flashCount: challenge.config.flashCount,
+      flashDurationMs: challenge.config.flashDurationMs,
+      digits: challenge.config.digits,
+      code: challenge.config.code
+    }
+  });
+
+  // Expire session after window
+  setTimeout(() => {
+    const session = getSession(sessionToken);
+    if (session) {
+      removeSession(sessionToken);
+      send(ws, "hint:expired", { reason: "timeout" });
+    }
+  }, (challenge.slotDurationSeconds + challenge.config.answerWindowSeconds) * 1000);
+}
+
+async function handleAnswerSubmit(ws, { challengeId, answer, sessionToken, interactionProof, winnerAddress }) {
+  const validation = validateSessionToken(sessionToken);
+  if (!validation.valid) {
+    send(ws, "submission:result", { correct: false, message: "Sesión inválida o expirada: " + validation.reason });
+    return;
+  }
+
+  const challenge = getChallengeById(challengeId);
+  if (!challenge) {
+    send(ws, "submission:result", { correct: false, message: "Reto no encontrado" });
+    return;
+  }
+
+  // Validate interaction proof
+  const proofValid = validateInteractionProof(interactionProof, challenge, sessionToken);
+  if (!proofValid) {
+    send(ws, "submission:result", { correct: false, message: "Proof de interacción inválido — ¡hacé clic en el juego!" });
+    return;
+  }
+
+  // Check answer
+  const answeredHash = hashAnswer(answer);
+  if (answeredHash !== challenge.answerHash) {
+    send(ws, "submission:result", { correct: false, message: "Respuesta incorrecta. ¡Intentá de nuevo!" });
+    return;
+  }
+
+  // WINNER!
+  removeSession(sessionToken);
+  const state = getState();
+  const prizePoolSats = state.prizePoolSats;
+  const { resetPool } = await import("./game-state.js");
+  resetPool();
+
+  // Get winner address
+  const clientInfo = clients.get(ws);
+  const lnAddress = winnerAddress || clientInfo?.winnerAddress;
+
+  send(ws, "submission:result", { correct: true, message: `¡Ganaste ${Math.floor(prizePoolSats * 0.9)} sats!` });
+
+  // Pay winner
+  let paidSats = 0;
+  if (lnAddress) {
+    const payResult = await payWinner(lnAddress, prizePoolSats);
+    paidSats = payResult.payoutSats || 0;
+  } else {
+    console.log("⚠️  Ganador sin Lightning Address — no se puede pagar automáticamente");
+    paidSats = Math.floor(prizePoolSats * 0.9);
+  }
+
+  // Advance to next challenge
+  const nextChallenge = advanceChallenge();
+
+  // Broadcast win to all
+  broadcastFn("challenge:solved", {
+    prizePoolSats,
+    paidSats,
+    nextChallengeIn: 5
+  });
+
+  // Broadcast new challenge after 5s
+  setTimeout(() => {
+    broadcastFn("challenge:new", {
+      challengeId: nextChallenge.id,
+      title: nextChallenge.title,
+      type: nextChallenge.type,
+      prizePoolSats: 0,
+      slotPriceSats: nextChallenge.pricePerSlotSats
+    });
+  }, 5000);
+}
+
+export function broadcast(event, data) {
+  if (broadcastFn) broadcastFn(event, data);
+}

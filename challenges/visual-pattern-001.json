@@ -1,0 +1,17 @@
+{
+  "id": "vp-001",
+  "type": "visual-pattern",
+  "title": "Secuencia de Colores",
+  "pricePerSlotSats": 50,
+  "slotDurationSeconds": 15,
+  "answerHash": "b6a92a3d3ad657ea459d68a533d37a7e1e2cb2a634ee9361b300c044f0279e19",
+  "config": {
+    "seed": 42,
+    "colors": ["red", "blue", "green", "yellow", "purple"],
+    "sequenceLength": 10,
+    "sequence": ["red", "blue", "green", "yellow", "purple", "blue", "red", "green", "yellow", "purple"],
+    "interactionRequired": "click-in-order",
+    "requiredClicks": 10,
+    "answerWindowSeconds": 60
+  }
+}
